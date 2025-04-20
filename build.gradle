@@ -31,4 +31,5 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-ext['hibernate.version'] = '6.6.3.Final'
+// Using Spring Boot's managed version: https://docs.spring.io/spring-boot/3.4.4/appendix/dependency-versions/coordinates.html
+//ext['hibernate.version'] = '6.6.3.Final'
