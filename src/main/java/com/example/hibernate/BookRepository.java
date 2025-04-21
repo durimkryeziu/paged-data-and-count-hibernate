@@ -1,8 +1,9 @@
 package com.example.hibernate;
 
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.transaction.annotation.Transactional;
+import com.example.hibernate.pagination.Page;
+import com.example.hibernate.pagination.Pageable;
 
-@Transactional(readOnly = true)
-public interface BookRepository extends CrudRepository<Book, Long>, BookRepositoryCustom {
+public interface BookRepository {
+
+    Page<Book> findByTitle(String title, Pageable pageable);
 }
