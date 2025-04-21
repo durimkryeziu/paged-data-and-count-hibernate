@@ -2,14 +2,14 @@
 
 This repository shows that after upgrading to Hibernate version >= 6.6.4.Final native quries with scalar values fail
 
-- The working [commit](https://github.com/durimkryeziu/paged-data-and-count-hibernate/commit/e0a7924eef70366c0b3b20ea5451e39d3d72de45):
+- The working [commit](https://github.com/durimkryeziu/paged-data-and-count-hibernate/commit/2783d32b605935b45a37d0bf025521044043ecec):
 ```
 Hibernate: SELECT b.*, COUNT(*) OVER() AS total_count
 FROM books b
 WHERE b.title ILIKE ?
 ORDER BY b.id fetch first ? rows only
 ```
-- The non-working [commit](https://github.com/durimkryeziu/paged-data-and-count-hibernate/commit/9a90ac61b9127bdda6c667e1aca0b0145aadd4c0):
+- The non-working [commit](https://github.com/durimkryeziu/paged-data-and-count-hibernate/commit/10c8cbba4c6d183a2f31d418322a4be2c7bed71b):
 ```
 Hibernate: SELECT b.*, COUNT(*) OVER() AS total_count
 FROM books b
@@ -17,9 +17,9 @@ WHERE b.title ILIKE ?
 ORDER BY b.id fetch first ? rows only
 
 java.lang.ClassCastException: class java.lang.Long cannot be cast to class [Ljava.lang.Object; (java.lang.Long and [Ljava.lang.Object; are in module java.base of loader 'bootstrap')
-	at com.example.hibernate.HibernateUtils.count(HibernateUtils.java:30)
-	at com.example.hibernate.HibernateUtils.getResultListAndCount(HibernateUtils.java:21)
-	at com.example.hibernate.JpaBookRepository.findByTitle(JpaBookRepository.java:34)
+	at com.example.hibernate.HibernateUtils.count(HibernateUtils.java:28)
+	at com.example.hibernate.HibernateUtils.getResultListAndCount(HibernateUtils.java:19)
+	at com.example.hibernate.HibernateBookRepository.findByTitle(HibernateBookRepository.java:34)
 	at com.example.hibernate.BookRepositoryTest.findByTitle(BookRepositoryTest.java:86)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
