@@ -59,7 +59,6 @@ class BookRepositoryTest {
         properties.put("jakarta.persistence.jdbc.password", postgreSql.getPassword());
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.show_sql", "true");
-        properties.put("hibernate.format_sql", "true");
         return properties;
     }
 
