@@ -1,6 +1,5 @@
 package com.example.hibernate;
 
-import jakarta.persistence.Query;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.type.StandardBasicTypes;
 
@@ -14,8 +13,7 @@ public final class HibernateUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> ResultListAndCount<T> getResultListAndCount(Query query, String countColumnAlias) {
-        NativeQuery<Object[]> nativeQuery = query.unwrap(NativeQuery.class);
+    public static <T> ResultListAndCount<T> getResultListAndCount(NativeQuery nativeQuery, String countColumnAlias) {
         nativeQuery.addScalar(countColumnAlias, StandardBasicTypes.LONG);
         List<Object[]> results = nativeQuery.getResultList();
         long count = results != null && !results.isEmpty() ? count(results) : 0;

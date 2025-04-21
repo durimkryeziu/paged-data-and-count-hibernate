@@ -2,9 +2,9 @@ package com.example.hibernate;
 
 import com.example.hibernate.pagination.Page;
 import com.example.hibernate.pagination.Pageable;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.sql.*;
-import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,14 +23,14 @@ class BookRepositoryTest {
     @Container
     static final PostgreSQLContainer<?> postgreSql = new PostgreSQLContainer<>(DockerImageName.parse("postgres:14.15"));
 
-    private EntityManager entityManager;
+    private Session session;
 
     @BeforeEach
     void setup() {
         while (!validateDatabaseConnection()) {
             // Waiting for PostgreSQL to be ready...
         }
-        this.entityManager = createEntityManager();
+        this.session = openHibernateSession();
         seedBooksData();
     }
 
@@ -45,21 +44,23 @@ class BookRepositoryTest {
         }
     }
 
-    private static EntityManager createEntityManager() {
-        Properties properties = databaseProperties();
-        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("books-persistence-unit", properties);
-        return entityManagerFactory.createEntityManager();
+    private static Session openHibernateSession() {
+        Configuration hibernateConfiguration = hibernateConfiguration();
+        SessionFactory sessionFactory = hibernateConfiguration.buildSessionFactory();
+        return sessionFactory.openSession();
     }
 
-    private static Properties databaseProperties() {
-        Properties properties = new Properties();
-        properties.put("jakarta.persistence.jdbc.driver", "org.postgresql.Driver");
-        properties.put("jakarta.persistence.jdbc.url", postgreSql.getJdbcUrl());
-        properties.put("jakarta.persistence.jdbc.user", postgreSql.getUsername());
-        properties.put("jakarta.persistence.jdbc.password", postgreSql.getPassword());
-        properties.put("hibernate.hbm2ddl.auto", "update");
-        properties.put("hibernate.show_sql", "true");
-        return properties;
+    private static Configuration hibernateConfiguration() {
+        Configuration configuration = new Configuration();
+        configuration.setProperty("connection.driver_class", "org.postgresql.Driver");
+        configuration.setProperty("jakarta.persistence.jdbc.url", postgreSql.getJdbcUrl());
+        configuration.setProperty("jakarta.persistence.jdbc.user", postgreSql.getUsername());
+        configuration.setProperty("jakarta.persistence.jdbc.password", postgreSql.getPassword());
+        configuration.setProperty("hibernate.hbm2ddl.auto", "update");
+        configuration.setProperty("hibernate.show_sql", "true");
+        configuration.setProperty("hibernate.highlight_sql", "true");
+        configuration.addAnnotatedClass(Book.class);
+        return configuration;
     }
 
     private void seedBooksData() {
@@ -74,14 +75,14 @@ class BookRepositoryTest {
                        ('Domain-Driven Design: Tackling Complexity in the Heart of Software', 'Eric Evans', 2003, '9780321125217'),
                        ('The Mythical Man-Month: Essays on Software Engineering', 'Frederick P. Brooks Jr.', 1975, '9780201835953');
                 """;
-        this.entityManager.getTransaction().begin();
-        this.entityManager.createNativeQuery(sql).executeUpdate();
-        this.entityManager.getTransaction().commit();
+        this.session.getTransaction().begin();
+        this.session.createNativeMutationQuery(sql).executeUpdate();
+        this.session.getTransaction().commit();
     }
 
     @Test
     void findByTitle() {
-        BookRepository bookRepository = new JpaBookRepository(this.entityManager);
+        BookRepository bookRepository = new HibernateBookRepository(this.session);
         Page<Book> booksPage = bookRepository.findByTitle("code", Pageable.ofSize(2));
         assertThat(booksPage.size()).isEqualTo(2);
         assertThat(booksPage.totalElements()).isEqualTo(4);
@@ -92,8 +93,8 @@ class BookRepositoryTest {
 
     @AfterEach
     void tearDown() {
-        if (this.entityManager != null && this.entityManager.isOpen()) {
-            this.entityManager.close();
+        if (this.session != null && this.session.isOpen()) {
+            this.session.close();
         }
     }
 }

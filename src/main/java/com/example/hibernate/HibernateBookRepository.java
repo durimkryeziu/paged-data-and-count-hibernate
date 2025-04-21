@@ -3,17 +3,17 @@ package com.example.hibernate;
 import com.example.hibernate.HibernateUtils.ResultListAndCount;
 import com.example.hibernate.pagination.Page;
 import com.example.hibernate.pagination.Pageable;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 
 import java.util.Objects;
 
-class JpaBookRepository implements BookRepository {
+class HibernateBookRepository implements BookRepository {
 
-    private final EntityManager entityManager;
+    private final Session session;
 
-    JpaBookRepository(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    HibernateBookRepository(Session session) {
+        this.session = session;
     }
 
     @Override
@@ -25,7 +25,7 @@ class JpaBookRepository implements BookRepository {
                 WHERE b.title ILIKE :title
                 ORDER BY b.id
                 """;
-        Query query = this.entityManager.createNativeQuery(sql, Book.class);
+        NativeQuery<Book> query = this.session.createNativeQuery(sql, Book.class);
         query.setParameter("title", "%" + title + "%");
         if (pageable.isPaged()) {
             query.setMaxResults(pageable.getPageSize());
